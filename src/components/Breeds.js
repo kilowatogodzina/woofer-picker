@@ -1,6 +1,7 @@
 import React from 'react';
 import { getDogBreeds, getRandomDogImage } from '../services/axios';
 import DogPopup from './DogPopup';
+import Loader from './Loader';
 
 class Breeds extends React.Component {
   constructor(props) {
@@ -11,6 +12,7 @@ class Breeds extends React.Component {
       dogImage: '',
       isLoading: true,
       isPopupOpen: false,
+      currentBreed: '',
     };
   }
 
@@ -35,22 +37,44 @@ class Breeds extends React.Component {
         this.setState({
           isPopupOpen: true,
           dogImage: image,
+          currentBreed: breed.replace('/', ' '),
         });
       }
     });
-  }
+  };
 
   onCloseDogPopup = () => {
     this.setState({
       isPopupOpen: false,
     });
-  }
+  };
+
+  getAnotherPicture = () => {
+    let breed = this.state.currentBreed.replace(' ', '/');
+
+    getRandomDogImage(breed).then((result) => {
+      if (result.status === 'success') {
+        let image = result.message;
+
+        this.setState({
+          dogImage: image,
+          currentBreed: breed.replace('/', ' '),
+        });
+      }
+    });
+  };
 
   render() {
-    let { dogBreeds, isLoading, isPopupOpen, dogImage } = this.state;
+    let {
+      dogBreeds,
+      isLoading,
+      isPopupOpen,
+      dogImage,
+      currentBreed,
+    } = this.state;
 
     if (isLoading) {
-      return <div>Ładowanie...</div>;
+      return <Loader />;
     }
 
     return (
@@ -80,8 +104,15 @@ class Breeds extends React.Component {
             );
           })}
         </div>
-        
-        {isPopupOpen && <DogPopup dogImage={dogImage} onClosePopup={this.onCloseDogPopup}/>}
+
+        {isPopupOpen && (
+          <DogPopup
+            breed={currentBreed}
+            dogImage={dogImage}
+            onClosePopup={this.onCloseDogPopup}
+            onChooseAnother={this.getAnotherPicture}
+          />
+        )}
       </>
     );
   }

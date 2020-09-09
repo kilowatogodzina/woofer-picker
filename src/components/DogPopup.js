@@ -13,15 +13,41 @@ const PopupWrapper = styled.div`
   left: 0;
 `;
 
+const PopupContent = styled.div`
+  width: 700px;
+  height: 400px;
+  max-width: 100%;
+  max-height: 80%;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+`;
+
 class DogPopup extends React.Component {
   render() {
-    let { dogImage, onClosePopup } = this.props;
+    let { dogImage, onClosePopup, breed, onChooseAnother } = this.props;
 
-    //TODO: Closing popup, getting another random image
     return (
       <>
-        <PopupWrapper onClick={onClosePopup}>
-          <img src={dogImage} alt=''></img>
+        <PopupWrapper>
+          <PopupContent>
+            <div>{breed}</div>
+
+            {dogImage && 
+              <img src={dogImage} alt=''></img>
+            }
+
+            <button onClick={onChooseAnother}>Another dog!</button>
+            <button onClick={onClosePopup}>Finish!</button>
+          </PopupContent>
         </PopupWrapper>
       </>
     );
