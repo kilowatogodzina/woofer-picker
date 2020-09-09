@@ -1,83 +1,87 @@
 import React from 'react';
-import axios from 'axios';
+import { getDogBreeds, getRandomDogImage } from '../services/axios';
+import DogPopup from './DogPopup';
 
 class Breeds extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      breeds: [],
+      dogBreeds: [],
+      dogImage: '',
       isLoading: true,
-      error: {},
+      isPopupOpen: false,
     };
   }
 
   componentDidMount() {
-    this.getDogBreeds();
-  }
-
-  getDogBreeds() {
-    // TODO: Move this URL to env and create service to manage 
-    axios.get('https://dog.ceo/api/breeds/list/all').then((result) => {
-      if (result.data.status === 'success') {
-        // Because result.data.message is an object...
-        let breedsArray = Object.entries(result.data.message);
+    getDogBreeds().then((result) => {
+      if (result.status === 'success') {
+        let dogBreeds = Object.entries(result.message);
 
         this.setState({
-          breeds: breedsArray,
           isLoading: false,
+          dogBreeds: dogBreeds,
         });
       }
     });
   }
 
-  getRandomDogImage(breed) {
-    // TODO: Move this URL to env and create service to manage 
-    axios
-      .get(`https://dog.ceo/api/breed/${breed}/images/random`)
-      .then((result) => {
-        if (result.data.status === 'success') {
-          window.open(result.data.message, '_blank');
-        }
-      });
+  openDogPopup = (breed) => {
+    getRandomDogImage(breed).then((result) => {
+      if (result.status === 'success') {
+        let image = result.message;
+
+        this.setState({
+          isPopupOpen: true,
+          dogImage: image,
+        });
+      }
+    });
+  }
+
+  onCloseDogPopup = () => {
+    this.setState({
+      isPopupOpen: false,
+    });
   }
 
   render() {
-    let { breeds, isLoading } = this.state;
+    let { dogBreeds, isLoading, isPopupOpen, dogImage } = this.state;
+
+    if (isLoading) {
+      return <div>Ładowanie...</div>;
+    }
+
     return (
       <>
-        {/* TODO: Insert prettier loader */}
-        {isLoading && <div>Ładowanie...</div>}
+        <div>
+          {/* TODO: This needs refactoring! */}
+          {dogBreeds.map(([key, value], index) => {
+            return (
+              <>
+                <div key={index} onClick={() => this.openDogPopup(key)}>
+                  {key}
+                </div>
 
-        {!isLoading && (
-          <div>
-            {/* TODO: This needs refactoring! */}
-            {breeds.map(([key, value], index) => {
-              return (
-                <>
-                  <div key={index} onClick={() => this.getRandomDogImage(key)}>
-                    {key}
+                {value.length > 0 && (
+                  <div>
+                    {value.map((breed, i) => (
+                      <div
+                        key={i}
+                        onClick={() => this.openDogPopup(`${key}/${breed}`)}
+                      >
+                        {key} {breed}
+                      </div>
+                    ))}
                   </div>
-
-                  {value.length > 0 && (
-                    <div>
-                      {value.map((breed, i) => (
-                        <div
-                          key={i}
-                          onClick={() =>
-                            this.getRandomDogImage(`${key}/${breed}`)
-                          }
-                        >
-                          {key} {breed}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              );
-            })}
-          </div>
-        )}
+                )}
+              </>
+            );
+          })}
+        </div>
+        
+        {isPopupOpen && <DogPopup dogImage={dogImage} onClosePopup={this.onCloseDogPopup}/>}
       </>
     );
   }
