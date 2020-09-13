@@ -118,7 +118,7 @@ class Breeds extends React.Component {
 
     return (
       <MainWrapper>
-        <Header>Choose your favourite dog!</Header>
+        <Header>Choose your favourite dog breed!</Header>
         <BreedsWrapper>
           {dogBreeds.map(([key, value], index) => {
             return (
